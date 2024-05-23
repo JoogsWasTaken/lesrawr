@@ -1,0 +1,18 @@
+[attachments]
+mime_type_detect_buffer_size = 2048
+mime_type_blacklist = [
+    # PDFs (.pdf)
+    "application/pdf",
+    # Office (.doc, .docx, .xls, .xls, .ppt, .pptx, .odt, .ods, .odp)
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    # Skripte (.sh, .bat)
+    "application/x-sh",
+    "application/bat",
+    "application/x-bat",
+    "application/x-msdos-program"
+]
