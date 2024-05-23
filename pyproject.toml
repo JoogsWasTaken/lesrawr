@@ -10,7 +10,7 @@ package-mode = false
 lesbot = "lesbot.app:run"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 discord-py = "^2.3.2"
 python-dotenv = "^1.0.1"
 python-magic = "^0.4.27"
