@@ -4,7 +4,6 @@ version = "0.1.0"
 description = ""
 authors = ["Maximilian <git@eulenbu.de>"]
 packages = [{ include = "lesbot" }]
-package-mode = false
 
 [tool.poetry.scripts]
 lesbot = "lesbot.app:run"
