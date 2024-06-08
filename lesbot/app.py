@@ -67,7 +67,8 @@ intents.members = True
 intents.message_content = True
 
 config: BotConfig
-client = commands.Bot(command_prefix='!', intents=intents, activity=activity)
+client = commands.Bot(command_prefix="!", intents=intents, activity=activity)
+
 
 @client.event
 async def on_ready():
@@ -99,10 +100,12 @@ def obtain_mime_type_from_attachment(attachment: discord.Attachment):
 
     return magic.from_buffer(attachment_content, mime=True)
 
+
 # TinyDB for saving the reactionroles
 db = TinyDB("database.json")
 User = Query()
 required_role_id = 1241433186710585496
+
 
 @client.command()
 async def remove_reaction_role(ctx, message_ID, Emoji):
@@ -114,25 +117,32 @@ async def remove_reaction_role(ctx, message_ID, Emoji):
     # checks, if the message id is in the database
     data = db.get(User.message_ID == str(message_ID))
     if data is None:
-        await ctx.send(f"Keine Reaction-Rolle gefunden für die Nachricht mit der ID {message_ID}.")
+        await ctx.send(
+            f"Keine Reaction-Rolle gefunden für die Nachricht mit der ID {message_ID}."
+        )
         return
 
     # Searching the roles in the message for the role with the specified emoji
-    for role_entry in data['roles']:
-        if role_entry['Emoji'] == Emoji:
+    for role_entry in data["roles"]:
+        if role_entry["Emoji"] == Emoji:
             # remove role from the database
-            data['roles'].remove(role_entry)
-            db.update({'roles': data['roles']}, User.message_ID == str(message_ID))
-            
+            data["roles"].remove(role_entry)
+            db.update({"roles": data["roles"]}, User.message_ID == str(message_ID))
+
             # remove reaction
             message = await ctx.fetch_message(message_ID)
             await message.remove_reaction(Emoji, client.user)
 
-            await ctx.send(f"Reaction-Rolle mit dem Emoji {Emoji} wurde aus der Nachricht mit der ID {message_ID} entfernt.")
+            await ctx.send(
+                f"Reaction-Rolle mit dem Emoji {Emoji} wurde aus der Nachricht mit der ID {message_ID} entfernt."
+            )
             return
 
     # If emoji wasn't found
-    await ctx.send(f"Keine Reaction-Rolle gefunden für das Emoji {Emoji} in der Nachricht mit der ID {message_ID}.")
+    await ctx.send(
+        f"Keine Reaction-Rolle gefunden für das Emoji {Emoji} in der Nachricht mit der ID {message_ID}."
+    )
+
 
 # add reactionroles
 @client.command()
@@ -141,23 +151,33 @@ async def add_reaction_role(ctx, Rolle, message_ID, Emoji):
     if not any(role.id == required_role_id for role in ctx.author.roles):
         await ctx.send("Du hast keine rechte hierfür!")
         return
-    
+
     role = discord.utils.get(ctx.guild.roles, name=Rolle)
     if role is None:
         await ctx.send(f"Rolle {Rolle} nicht gefunden")
         return
     role_ID = role.id
-    
-    db.upsert({"message_ID": str(message_ID), "roles": [{"role_ID": role_ID, "Emoji": Emoji}]}, User.message_ID == str(message_ID))
-    
+
+    db.upsert(
+        {
+            "message_ID": str(message_ID),
+            "roles": [{"role_ID": role_ID, "Emoji": Emoji}],
+        },
+        User.message_ID == str(message_ID),
+    )
+
     message = await ctx.fetch_message(message_ID)
     await message.add_reaction(Emoji)
-    await ctx.send(f"Die Rolle {Rolle} wurde dem Emoji {Emoji} hinzugefügt unter der Message ID {message_ID}")
+    await ctx.send(
+        f"Die Rolle {Rolle} wurde dem Emoji {Emoji} hinzugefügt unter der Message ID {message_ID}"
+    )
+
 
 @client.event
-async def on_command_error(ctx,error):
+async def on_command_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send("Du hast ein Argument vergessen hinzuzufügen!")
+
 
 # giving roles
 @client.event
@@ -174,9 +194,9 @@ async def on_raw_reaction_add(payload):
     if data is None:
         return
 
-    for role_entry in data['roles']:
-        if role_entry['Emoji'] == str(payload.emoji):
-            role = guild.get_role(role_entry['role_ID'])
+    for role_entry in data["roles"]:
+        if role_entry["Emoji"] == str(payload.emoji):
+            role = guild.get_role(role_entry["role_ID"])
             if role is None:
                 continue
 
@@ -188,8 +208,11 @@ async def on_raw_reaction_add(payload):
             try:
                 await member.add_roles(role)
             except discord.errors.Forbidden:
-                print(f"Fehlende Berechtigungen, um die Rolle {role.name} zuzuweisen.")
+                logger.opt(exception=True).error(
+                    f"Fehlende Berechtigungen, um die Rolle {role.name} zuzuweisen."
+                )
                 return
+
 
 # removes roles
 @client.event
@@ -206,9 +229,9 @@ async def on_raw_reaction_remove(payload):
     if data is None:
         return
 
-    for role_entry in data['roles']:
-        if role_entry['Emoji'] == str(payload.emoji):
-            role = guild.get_role(role_entry['role_ID'])
+    for role_entry in data["roles"]:
+        if role_entry["Emoji"] == str(payload.emoji):
+            role = guild.get_role(role_entry["role_ID"])
             if role is None:
                 continue
 
@@ -220,8 +243,11 @@ async def on_raw_reaction_remove(payload):
             try:
                 await member.remove_roles(role)
             except discord.errors.Forbidden:
-                print(f"Fehlende Berechtigungen, um die Rolle {role.name} zu entfernen.")
+                logger.opt(exception=True).error(
+                    f"Fehlende Berechtigungen, um die Rolle {role.name} zu entfernen."
+                )
                 return
+
 
 @client.listen()
 async def on_message(message: discord.Message):
