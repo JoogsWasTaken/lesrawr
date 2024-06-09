@@ -112,7 +112,7 @@ async def remove_reaction_role(ctx, message_id, emoji):
     if not any(
         role.id in config.reaction_roles.permitted_role_ids for role in ctx.author.roles
     ):
-        await ctx.send("Du hast keine rechte hierfür!")
+        await ctx.send("Du hast keine Rechte hierfür!")
         return
 
     # checks, if the message id is in the database
@@ -152,7 +152,7 @@ async def add_reaction_role(ctx, role, message_id, emoji):
     if not any(
         role.id in config.reaction_roles.permitted_role_ids for role in ctx.author.roles
     ):
-        await ctx.send("Du hast keine rechte hierfür!")
+        await ctx.send("Du hast keine Rechte hierfür!")
         return
 
     role = discord.utils.get(ctx.guild.roles, name=role)
