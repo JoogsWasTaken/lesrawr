@@ -266,8 +266,6 @@ async def on_message(message: discord.Message):
     if message.author.bot:
         return
 
-    await client.process_commands(message)
-
     # ignore messages without attachments
     if len(message.attachments) == 0:
         return
@@ -297,6 +295,8 @@ async def on_message(message: discord.Message):
 
         # don't need to go over any extra attachments
         break
+
+    await client.process_commands(message)
 
 
 def run():
