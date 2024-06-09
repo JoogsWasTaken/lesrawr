@@ -16,3 +16,9 @@ mime_type_blacklist = [
     "application/x-bat",
     "application/x-msdos-program"
 ]
+
+[reaction_roles]
+permitted_role_ids = [
+    1241433186710585496,
+    1249334733209468949
+]
