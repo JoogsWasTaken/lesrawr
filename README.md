@@ -41,6 +41,25 @@ Der Bot kann dann mit dem folgenden Befehl gestartet werden.
 $ poetry run lesbot
 ```
 
+# Features
+
+Der Bot verfügt über zwei Funktionen.
+Er filtert automatisch Nachrichten mit Anhängen heraus, die einen bestimmten Inhalt enthalten.
+[Diese Anhänge können konfiguriert werden.](#anhänge-attachments)
+Wird ein Anhang mit einem verbotenen Inhalt entdeckt, so wird die Nachricht gelöscht und der Autor informiert.
+
+Weiterhin kann der Bot Reaction Roles managen.
+Hierfür bietet der Bot zwei Kommandos an, um Reaction Roles zu definieren.
+
+- `!add_reaction_role "Name der Rolle" "ID der Nachricht für die Rollenvergabe" "Emoji für die Rolle"`: Legt eine neue
+  Reaction Role an. Der angegebenen Nachricht wird ein neues Emoji hinzugefügt. Klickt ein Nutzer das Emoji an, so wird
+  ihm die angegebene Rolle zugewiesen.
+- `!remove_reaction_role "ID der Nachricht für die Rollenvergabe" "Emoji für die Rolle"`: Entfernt das Emoji für eine
+  Reaction Role von der angegebenen Nachricht.
+
+Reaction Roles können nur von Nutzern angelegt werden, die über eine entsprechende Rolle verfügen.
+[Diese Rollen können konfiguriert werden.](#reaction-roles-reaction_roles)
+
 # Konfiguration
 
 Die Konfiguration erfolgt, bis auf die Provision des
@@ -55,17 +74,21 @@ Diese Datei liegt im [TOML-Format](https://toml.io/en/) vor.
 - `mime_type_blacklist`: Liste der unzulässigen MIME-Types für Anhänge. Wird ein Anhang mit einem MIME-Type aus dieser
   Liste detektiert, so wird die dazu verknüpfte Nachricht gelöscht und die verfassende Person informiert.
 
+## Reaction Roles (`reaction_roles`)
+
+- `permitted_role_ids`: IDs der Rollen, die zum Anlegen und Entfernen von Reaction Roles berechtigt sind
+
 # Installation
 
 Um den Bot zu Servern hinzuzufügen, muss ein Einladungslink generiert werden.
 Über das Entwicklerportal kann der Link über die OAuth2-Einstellungen erzeugt werden.
 Unter "Scopes" muss "bot" aktiviert sein.
-Unter "Bot Permissions" müssen mindestens "Read Messages/View Channels", "Send Messages" und "Manage Messages" aktiviert
-sein.
+Unter "Bot Permissions" müssen mindestens "Read Messages/View Channels", "Send Messages", "Manage Roles", "Add
+Reactions" und "Manage Messages" aktiviert sein.
 Der Einladungslink sollte mit diesen Mindestberechtigungen den folgenden Aufbau besitzen.
 
 ```
-https://discord.com/oauth2/authorize?client_id=INSERT_CLIENT_ID_HERE&permissions=11264&scope=bot
+https://discord.com/oauth2/authorize?client_id=INSERT_CLIENT_ID_HERE&permissions=268446784&scope=bot
 ```
 
 ## Manuell

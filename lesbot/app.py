@@ -104,72 +104,75 @@ def obtain_mime_type_from_attachment(attachment: discord.Attachment):
 # TinyDB for saving the reactionroles
 db = TinyDB("database.json")
 User = Query()
-required_role_id = 1241433186710585496
 
 
 @client.command()
-async def remove_reaction_role(ctx, message_ID, Emoji):
+async def remove_reaction_role(ctx, message_id, emoji):
     # check if user is authorized
-    if not any(role.id == required_role_id for role in ctx.author.roles):
-        await ctx.send("Du hast keine rechte hierfür!")
+    if not any(
+        role.id in config.reaction_roles.permitted_role_ids for role in ctx.author.roles
+    ):
+        await ctx.send("Du hast keine Rechte hierfür!")
         return
 
     # checks, if the message id is in the database
-    data = db.get(User.message_ID == str(message_ID))
+    data = db.get(User.message_ID == str(message_id))
     if data is None:
         await ctx.send(
-            f"Keine Reaction-Rolle gefunden für die Nachricht mit der ID {message_ID}."
+            f"Keine Reaction-Rolle gefunden für die Nachricht mit der ID {message_id}."
         )
         return
 
     # Searching the roles in the message for the role with the specified emoji
     for role_entry in data["roles"]:
-        if role_entry["Emoji"] == Emoji:
+        if role_entry["Emoji"] == emoji:
             # remove role from the database
             data["roles"].remove(role_entry)
-            db.update({"roles": data["roles"]}, User.message_ID == str(message_ID))
+            db.update({"roles": data["roles"]}, User.message_ID == str(message_id))
 
             # remove reaction
-            message = await ctx.fetch_message(message_ID)
-            await message.remove_reaction(Emoji, client.user)
+            message = await ctx.fetch_message(message_id)
+            await message.remove_reaction(emoji, client.user)
 
             await ctx.send(
-                f"Reaction-Rolle mit dem Emoji {Emoji} wurde aus der Nachricht mit der ID {message_ID} entfernt."
+                f"Reaction-Rolle mit dem Emoji {emoji} wurde aus der Nachricht mit der ID {message_id} entfernt."
             )
             return
 
     # If emoji wasn't found
     await ctx.send(
-        f"Keine Reaction-Rolle gefunden für das Emoji {Emoji} in der Nachricht mit der ID {message_ID}."
+        f"Keine Reaction-Rolle gefunden für das Emoji {emoji} in der Nachricht mit der ID {message_id}."
     )
 
 
 # add reactionroles
 @client.command()
-async def add_reaction_role(ctx, Rolle, message_ID, Emoji):
+async def add_reaction_role(ctx, role, message_id, emoji):
     # check if user is authorized
-    if not any(role.id == required_role_id for role in ctx.author.roles):
-        await ctx.send("Du hast keine rechte hierfür!")
+    if not any(
+        role.id in config.reaction_roles.permitted_role_ids for role in ctx.author.roles
+    ):
+        await ctx.send("Du hast keine Rechte hierfür!")
         return
 
-    role = discord.utils.get(ctx.guild.roles, name=Rolle)
+    role = discord.utils.get(ctx.guild.roles, name=role)
     if role is None:
-        await ctx.send(f"Rolle {Rolle} nicht gefunden")
+        await ctx.send(f"Rolle {role} nicht gefunden")
         return
     role_ID = role.id
 
     db.upsert(
         {
-            "message_ID": str(message_ID),
-            "roles": [{"role_ID": role_ID, "Emoji": Emoji}],
+            "message_ID": str(message_id),
+            "roles": [{"role_ID": role_ID, "Emoji": emoji}],
         },
-        User.message_ID == str(message_ID),
+        User.message_ID == str(message_id),
     )
 
-    message = await ctx.fetch_message(message_ID)
-    await message.add_reaction(Emoji)
+    message = await ctx.fetch_message(message_id)
+    await message.add_reaction(emoji)
     await ctx.send(
-        f"Die Rolle {Rolle} wurde dem Emoji {Emoji} hinzugefügt unter der Message ID {message_ID}"
+        f"Die Rolle {role} wurde dem Emoji {emoji} hinzugefügt unter der Message ID {message_id}"
     )
 
 
@@ -292,6 +295,7 @@ async def on_message(message: discord.Message):
 
         # don't need to go over any extra attachments
         break
+
     await client.process_commands(message)
 
 
