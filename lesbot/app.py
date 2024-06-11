@@ -160,16 +160,21 @@ async def add_reaction_role(ctx, role, message_id, emoji):
         await ctx.send(f"Rolle {role} nicht gefunden")
         return
     role_ID = role.id
-
-    existing_entry = db.get(User.message_ID == str(message_ID))
+    existing_entry = db.get(User.message_ID == str(message_id))
     if existing_entry:
         # Wenn der Eintrag existiert, fügen Sie die neue Rolle hinzu
-        existing_entry['roles'].append({"role_ID": role_ID, "Emoji": Emoji})
-        db.update({"roles": existing_entry['roles']}, User.message_ID == str(message_ID))
+        existing_entry["roles"].append({"role_ID": role_ID, "Emoji": emoji})
+        db.update(
+            {"roles": existing_entry["roles"]}, User.message_ID == str(message_id)
+        )
     else:
         # Andernfalls erstellen Sie einen neuen Eintrag
-        db.insert({"message_ID": str(message_ID), "roles": [{"role_ID": role_ID, "Emoji": Emoji}]})
-
+        db.insert(
+            {
+                "message_ID": str(message_id),
+                "roles": [{"role_ID": role_ID, "Emoji": emoji}],
+            }
+        )
 
     message = await ctx.fetch_message(message_id)
     await message.add_reaction(emoji)
