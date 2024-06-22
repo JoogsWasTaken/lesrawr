@@ -1,4 +1,5 @@
 import inspect
+import io
 import logging
 import os
 import sys
@@ -7,6 +8,7 @@ from pathlib import Path
 import discord
 import magic
 import requests
+from discord import File
 from discord.ext import commands
 from dotenv import load_dotenv
 from loguru import logger
@@ -293,12 +295,26 @@ async def on_message(message: discord.Message):
 
         logger.info("Found blacklisted attachment in message {}, deleting", message.id)
 
-        await message.delete()
-        await message.author.send(
-            f"Hey! Deine Nachricht in {message.channel.jump_url} wurde gelöscht weil sie einen Anhang enthielt, "
-            f"der auf dem Server nicht gestattet ist. Bitte lade den Anhang in die "
+        message_attachment = (
+            File(
+                fp=io.BytesIO(message.content.encode("utf-8")),
+                filename="original_message.txt",
+            )
+            if len(message.content) != 0
+            else None
+        )
+
+        message_content = (
+            f"Hey! Deine Nachricht in {message.channel.jump_url} wurde gelöscht weil sie einen Anhang "
+            f"enthielt, der auf dem Server nicht gestattet ist. Bitte lade den Anhang in die "
             f"[Leipzig eSports Cloud](https://cloud.leipzigesports.de/) hoch und verlinke ihn im Chat."
         )
+
+        if message_attachment is not None:
+            message_content += " Im Anhang dieser Nachricht findest du eine Kopie deiner ursprünglichen Nachricht."
+
+        await message.delete()
+        await message.author.send(message_content, file=message_attachment)
 
         # don't need to go over any extra attachments
         break
