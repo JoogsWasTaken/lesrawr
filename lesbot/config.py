@@ -1,7 +1,7 @@
 import tomllib
 from os import PathLike
 
-from pydantic import BaseModel, PositiveInt
+from pydantic import BaseModel, PositiveInt, Field
 
 
 class AttachmentConfig(BaseModel):
@@ -9,13 +9,15 @@ class AttachmentConfig(BaseModel):
     mime_type_blacklist: list[str]
 
 
-class ReactionRoleConfig(BaseModel):
+class GuildConfig(BaseModel):
+    id: int
     permitted_role_ids: list[int]
+    notification_channel_id: int
 
 
 class BotConfig(BaseModel):
     attachments: AttachmentConfig
-    reaction_roles: ReactionRoleConfig
+    guilds: list[GuildConfig] = Field(default_factory=list)
 
 
 def read_from(path: str | bytes | PathLike):

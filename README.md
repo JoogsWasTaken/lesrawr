@@ -34,6 +34,13 @@ Hierfür sollte am besten [die Anleitung von discord.py](https://discordpy.readt
 werden.
 Anschließend muss eine Kopie von `.env.example` mit dem Namen `.env` erzeugt werden.
 In diese Datei muss der Bot-Token eingetragen werden.
+Für die [Konfiguration](#konfiguration) muss eine Kopie von `app.example.toml` im `config` Verzeichnis namens `app.toml`
+erzeugt werden.
+
+```
+$ cp .env.example .env
+$ cp config/app.example.toml config/app.toml
+```
 
 Der Bot kann dann mit dem folgenden Befehl gestartet werden.
 
@@ -58,7 +65,7 @@ Hierfür bietet der Bot zwei Kommandos an, um Reaction Roles zu definieren.
   Reaction Role von der angegebenen Nachricht.
 
 Reaction Roles können nur von Nutzern angelegt werden, die über eine entsprechende Rolle verfügen.
-[Diese Rollen können konfiguriert werden.](#reaction-roles-reaction_roles)
+[Diese Rollen können konfiguriert werden.](#server-basierte-einstellungen-guilds)
 
 # Konfiguration
 
@@ -74,9 +81,13 @@ Diese Datei liegt im [TOML-Format](https://toml.io/en/) vor.
 - `mime_type_blacklist`: Liste der unzulässigen MIME-Types für Anhänge. Wird ein Anhang mit einem MIME-Type aus dieser
   Liste detektiert, so wird die dazu verknüpfte Nachricht gelöscht und die verfassende Person informiert.
 
-## Reaction Roles (`reaction_roles`)
+## Server-basierte Einstellungen (`guilds`)
 
-- `permitted_role_ids`: IDs der Rollen, die zum Anlegen und Entfernen von Reaction Roles berechtigt sind
+Für jeden Server, in dem der Bot arbeitet, muss eine Konfiguration vorliegen.
+
+- `id`: ID des Servers für den die Konfiguration gilt
+- `permitted_role_ids`: Liste von Rollen-IDs die befähigt sind, um Reaction Roles zu erstellen
+- `notification_channel_id`: ID des Textkanals im Server, in dem über gelöschte Nachrichten informiert wird
 
 # Installation
 

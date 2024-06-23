@@ -1,3 +1,4 @@
+import datetime
 import inspect
 import io
 import logging
@@ -16,7 +17,7 @@ from pydantic import ValidationError
 from tinydb import TinyDB, Query
 
 import lesbot.config
-from lesbot.config import BotConfig
+from lesbot.config import BotConfig, GuildConfig
 
 
 # set all standard logging to go through loguru instead, see:
@@ -69,6 +70,8 @@ intents.members = True
 intents.message_content = True
 
 config: BotConfig
+guild_id_to_config_mapping: dict[int, GuildConfig] = {}
+
 client = commands.Bot(command_prefix="!", intents=intents, activity=activity)
 
 
@@ -110,10 +113,13 @@ User = Query()
 
 @client.command()
 async def remove_reaction_role(ctx, message_id, emoji):
+    if ctx.guild.id not in guild_id_to_config_mapping.keys():
+        return
+
+    guild_config = guild_id_to_config_mapping[ctx.guild.id]
+
     # check if user is authorized
-    if not any(
-        role.id in config.reaction_roles.permitted_role_ids for role in ctx.author.roles
-    ):
+    if not any(role.id in guild_config.permitted_role_ids for role in ctx.author.roles):
         await ctx.send("Du hast keine Rechte hierfür!")
         return
 
@@ -150,10 +156,13 @@ async def remove_reaction_role(ctx, message_id, emoji):
 # add reactionroles
 @client.command()
 async def add_reaction_role(ctx, role, message_id, emoji):
+    if ctx.guild.id not in guild_id_to_config_mapping.keys():
+        return
+
+    guild_config = guild_id_to_config_mapping[ctx.guild.id]
+
     # check if user is authorized
-    if not any(
-        role.id in config.reaction_roles.permitted_role_ids for role in ctx.author.roles
-    ):
+    if not any(role.id in guild_config.permitted_role_ids for role in ctx.author.roles):
         await ctx.send("Du hast keine Rechte hierfür!")
         return
 
@@ -267,8 +276,11 @@ async def on_message(message: discord.Message):
     if message.author == client.user:
         return
 
-    # ignore messages that were not sent in a guild
-    if message.guild is None:
+    # ignore messages that were not sent in a configured guild
+    if (
+        message.guild is None
+        or message.guild.id not in guild_id_to_config_mapping.keys()
+    ):
         return
 
     # ignore messages from bots
@@ -304,6 +316,23 @@ async def on_message(message: discord.Message):
             else None
         )
 
+        guild_config = guild_id_to_config_mapping[message.guild.id]
+        guild_notify_channel = message.guild.get_channel(
+            guild_config.notification_channel_id
+        )
+
+        await guild_notify_channel.send(
+            embed=discord.Embed(
+                title="Anhang gelöscht",
+                description=f"{message.author.mention} hat in {message.channel.jump_url} einen Anhang geteilt, der "
+                f"in diesem Server nicht gestattet ist.",
+                timestamp=datetime.datetime.now(datetime.timezone.utc),
+                color=discord.Color.from_rgb(255, 104, 36),
+            )
+            .add_field(name="Name des Anhangs", value=attachment.filename)
+            .add_field(name="Datentyp des Anhangs", value=attachment_mime)
+        )
+
         message_content = (
             f"Hey! Deine Nachricht in {message.channel.jump_url} wurde gelöscht weil sie einen Anhang "
             f"enthielt, der auf dem Server nicht gestattet ist. Bitte lade den Anhang in die "
@@ -323,12 +352,16 @@ async def on_message(message: discord.Message):
 
 
 def run():
-    global config
+    global config, guild_id_to_config_mapping
 
     try:
         config = lesbot.config.read_from(
             Path(__file__).parent / ".." / "config" / "app.toml"
         )
+
+        guild_id_to_config_mapping = {
+            guild_config.id: guild_config for guild_config in config.guilds
+        }
     except ValidationError:
         logger.opt(exception=True).error("Failed to validate config file")
         exit(1)

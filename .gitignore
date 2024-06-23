@@ -79,3 +79,4 @@ dmypy.json
 .pytype/
 cython_debug/
 logs/
+config/app.toml
