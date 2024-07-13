@@ -10,7 +10,7 @@ FROM python:3.12-alpine
 
 WORKDIR /app
 
-ENV PYTHONPATH /app
+ENV PYTHONPATH=/app
 
 COPY config/ ./config/
 COPY --from=requirements-builder /tmp/requirements.txt ./
