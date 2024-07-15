@@ -3,7 +3,7 @@ FROM python:3.12-alpine AS requirements-builder
 WORKDIR /tmp
 COPY poetry.lock pyproject.toml ./
 
-RUN python -m pip install poetry && \
+RUN python -m pip install poetry==1.8.3 && \
     poetry export -f requirements.txt -o requirements.txt
 
 FROM python:3.12-alpine
