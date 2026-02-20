@@ -1,14 +1,14 @@
-FROM python:3.12-alpine AS requirements-builder
+FROM python:3.13.11-alpine AS requirements-builder
 
 WORKDIR /tmp
 COPY poetry.lock pyproject.toml ./
 
 RUN set -ex && \
-    python -m pip install --disable-pip-version-check poetry==1.8.3 && \
+    python -m pip install --disable-pip-version-check poetry==2.1.3 && \
     poetry self add poetry-plugin-export && \
     poetry export -f requirements.txt -o requirements.txt
 
-FROM python:3.12-alpine
+FROM python:3.13.11-alpine
 
 WORKDIR /app
 
